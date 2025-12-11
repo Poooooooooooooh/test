@@ -47,27 +47,32 @@ Fill in the following settings:
 ### Plan:
 - **Free** (or upgrade to Starter for better performance)
 
-## Step 5: Environment Variables
+## Step 5: Upload Firebase Credentials (REQUIRED)
 
-Click on **"Environment"** tab and add:
+**Important:** `serviceAccountKey.json` is in `.gitignore` for security, so you need to add it as an environment variable.
 
-1. **GOOGLE_APPLICATION_CREDENTIALS**
-   - Value: `serviceAccountKey.json`
+### Steps:
 
-## Step 6: Upload Firebase Credentials
+1. **Open your local `serviceAccountKey.json` file**
+2. **Copy the ENTIRE contents** (all the JSON, including `{` and `}`)
+3. **In Render dashboard**, go to your service → **"Environment"** tab
+4. **Click "Add Environment Variable"**
+5. **Add the variable:**
+   - **Key**: `FIREBASE_CREDENTIALS`
+   - **Value**: Paste the entire JSON content from `serviceAccountKey.json`
+   - **Example value format:**
+     ```json
+     {
+       "type": "service_account",
+       "project_id": "your-project-id",
+       "private_key_id": "...",
+       "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+       ...
+     }
+     ```
+6. **Click "Save Changes"**
 
-You have two options:
-
-### Option A: Commit to Repository (Easier, but less secure)
-1. Make sure `serviceAccountKey.json` is in your repository
-2. Render will automatically use it
-
-### Option B: Use Environment Variable (More Secure)
-1. Copy the entire contents of `serviceAccountKey.json`
-2. In Render, add environment variable:
-   - **Name**: `FIREBASE_CREDENTIALS`
-   - **Value**: Paste the entire JSON content
-3. Modify `firebase_config.py` to read from environment variable if needed
+**Note:** The code now automatically reads from `FIREBASE_CREDENTIALS` environment variable if available, or falls back to the file for local development.
 
 ## Step 7: Deploy!
 
