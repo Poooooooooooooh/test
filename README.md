@@ -8,7 +8,6 @@ A complete expense tracking chatbot application with Flask frontend, Firebase ba
 - 📱 **Flask UI**: Beautiful and intuitive web interface
 - 🔥 **Firebase Backend**: Secure cloud storage with Firestore
 - 📊 **Analytics**: Real-time expense summaries by category using Pandas
-- 🌐 **Thai Language Support**: Full support for Thai language input
 
 ## Project Structure
 
