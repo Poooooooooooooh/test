@@ -3190,6 +3190,17 @@
             
             // If switching to chatbot, ensure chat messages scroll to bottom and show welcome message
             if (page === 'chatbot') {
+                // On mobile, explicitly ensure chatbot section is visible and manual form is hidden
+                if (window.innerWidth <= 768) {
+                    const chatbotSection = document.getElementById('chatbotSection');
+                    const manualFormSection = document.getElementById('manualFormSection');
+                    if (chatbotSection) {
+                        chatbotSection.style.display = 'block';
+                    }
+                    if (manualFormSection) {
+                        manualFormSection.style.display = 'none';
+                    }
+                }
                 setTimeout(() => {
                     const chatMessages = document.getElementById('chatMessages');
                     if (chatMessages && window.innerWidth <= 768) {

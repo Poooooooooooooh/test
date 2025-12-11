@@ -1,0 +1,8 @@
+# Google App Engine configuration (alternative to Cloud Run)
+runtime: python311
+
+entrypoint: gunicorn -b :$PORT app:app
+
+env_variables:
+  GOOGLE_APPLICATION_CREDENTIALS: serviceAccountKey.json
+
