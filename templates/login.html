@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PIGGY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #b7e4f4 0%, #3abeed 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 400px;
+            border: 4px solid white;
+            box-sizing: border-box;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 0;
+        }
+        .logo-container img {
+            height: 135px;
+            width: auto;
+            margin: 0 auto 10px auto;
+            display: block;
+            object-fit: contain;
+            aspect-ratio: auto;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 3px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: white;
+            color: #333;
+        }
+        input:focus {
+            outline: none;
+            border-color: #3abeed;
+            box-shadow: 0 0 0 3px rgba(58, 190, 237, 0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(to bottom, #ffd1d1 0%, #ff6767 100%);
+            color: white;
+            border: 3px solid white;
+            border-radius: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .error {
+            background: white;
+            color: #ff6767;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: none;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid #c3e6cb;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .link a {
+            background: linear-gradient(to bottom, #ffd1d1 0%, #ff6767 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .link a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .form-container {
+                padding: 25px 20px;
+                max-width: 100%;
+                border-radius: 20px;
+            }
+            .logo-container img {
+                height: 100px;
+            }
+            .subtitle {
+                font-size: 1.5em !important;
+                margin-bottom: 20px;
+            }
+            input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 20px 15px;
+            }
+            .logo-container img {
+                height: 80px;
+            }
+            .subtitle {
+                font-size: 1.3em !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="logo-container">
+            <img src="/static/logo.png" alt="PIGGY Logo" style="height: 135px; width: auto; margin: 0 auto 10px auto; display: block; max-width: 100%; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <h1 style="display: none; background: linear-gradient(to bottom, #ffd1d1 0%, #ff6767 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2em; font-weight: 800; margin-top: 10px;">PIGGY</h1>
+        </div>
+        <p class="subtitle" style="font-size: 1.8em; font-weight: 800; color: #ff6767; margin-bottom: 20px;">Welcome back</p>
+        
+        <div id="error" class="error"></div>
+        <div id="success" class="success"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Your password">
+            </div>
+            <button type="submit" class="btn" id="submitBtn">Login</button>
+        </form>
+        
+        <div class="link">
+            Don't have an account? <a href="/signup">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('error');
+        const successDiv = document.getElementById('success');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('uid', data.uid);
+                    }
+                    successDiv.textContent = 'Login successful! Redirecting to Dashboard...';
+                    successDiv.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = data.error || 'Invalid email or password';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            }
+        });
+    </script>
+</body>
+</html>
