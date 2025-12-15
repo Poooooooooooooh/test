@@ -1934,64 +1934,6 @@
             });
         }
         
-        // Helper function to check if expense would exceed budget
-        async function checkBudgetExceeded(expenseAmount) {
-            try {
-                const response = await fetch('/expenses', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': token
-                    }
-                });
-                
-                if (!response.ok) return false; // Allow if can't check
-                
-                const expenses = await safeJsonParse(response);
-                const now = new Date();
-                const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                
-                let monthlyIncome = 0;
-                let monthlyExpenses = 0;
-                
-                expenses.forEach(expense => {
-                    const expenseDateStr = expense.datetime || expense.date;
-                    if (!expenseDateStr) return;
-                    
-                    let expenseDate;
-                    if (expenseDateStr.includes(' ')) {
-                        expenseDate = new Date(expenseDateStr.split(' ')[0] + 'T00:00:00');
-                    } else {
-                        expenseDate = new Date(expenseDateStr + 'T00:00:00');
-                    }
-                    
-                    if (expenseDate >= currentMonthStart) {
-                        const amount = parseFloat(expense.amount || 0);
-                        if (amount >= 0) {
-                            monthlyIncome += amount;
-                        } else {
-                            monthlyExpenses += Math.abs(amount);
-                        }
-                    }
-                });
-                
-                // Check if adding this expense would exceed income
-                if (monthlyIncome > 0 && (monthlyExpenses + expenseAmount) > monthlyIncome) {
-                    const remaining = monthlyIncome - monthlyExpenses;
-                    return {
-                        exceeded: true,
-                        remaining: remaining,
-                        monthlyIncome: monthlyIncome,
-                        monthlyExpenses: monthlyExpenses
-                    };
-                }
-                
-                return { exceeded: false };
-            } catch (error) {
-                console.error('Error checking budget:', error);
-                return { exceeded: false }; // Allow if check fails
-            }
-        }
-        
         // Form submission handler (mobile)
         const mobileForm = document.getElementById('transactionForm');
         if (mobileForm) {
@@ -2009,15 +1951,6 @@
                 const finalAmount = type === 'expense' ? -Math.abs(amount) : Math.abs(amount);
 
                 hideMessages();
-                
-                // Check budget if adding expense
-                if (type === 'expense') {
-                    const budgetCheck = await checkBudgetExceeded(amount);
-                    if (budgetCheck.exceeded) {
-                        showError(`❌ Expense would exceed monthly income! Remaining budget: ${budgetCheck.remaining.toFixed(2)} ฿`);
-                        return;
-                    }
-                }
 
                 try {
                     const response = await fetch('/add_expense', {
@@ -2095,15 +2028,6 @@
             const finalAmount = type === 'expense' ? -Math.abs(amount) : Math.abs(amount);
 
             hideMessages();
-            
-            // Check budget if adding expense
-            if (type === 'expense') {
-                const budgetCheck = await checkBudgetExceeded(amount);
-                if (budgetCheck.exceeded) {
-                    showError(`❌ Expense would exceed monthly income! Remaining budget: ${budgetCheck.remaining.toFixed(2)} ฿`);
-                    return;
-                }
-            }
 
             try {
                 const response = await fetch('/add_expense', {
@@ -2720,7 +2644,6 @@
             // Calculate total expenses
             const totalExpenses = Object.values(categorySpending).reduce((sum, amount) => sum + amount, 0);
             const remainingMoney = monthlyIncome - totalExpenses;
-            const isOverBudget = totalExpenses > monthlyIncome;
             
             // Calculate percentages and prepare data
             const categoryNames = {
@@ -2740,13 +2663,9 @@
             const data = [];
             const categoryOrder = []; // Store category order to maintain color consistency
             
-            // If expenses exceed income, normalize to show 100% of income usage
-            const normalizationFactor = isOverBudget ? (monthlyIncome / totalExpenses) : 1;
-            
             // Process categories and maintain order
             for (const [category, amount] of Object.entries(categorySpending)) {
-                const normalizedAmount = amount * normalizationFactor;
-                const percentage = (normalizedAmount / monthlyIncome) * 100;
+                const percentage = (amount / monthlyIncome) * 100;
                 if (percentage > 0) {
                     labels.push(categoryNames[category] || category);
                     data.push(percentage);
@@ -2754,20 +2673,12 @@
                 }
             }
             
-            // Add remaining money or over-budget indicator
-            if (isOverBudget) {
-                // Show over-budget as red segment (expenses exceeded income)
-                // The chart will show 100% usage (all expenses normalized)
-                // We'll add a special "Over Budget" indicator in the legend
-            } else if (remainingMoney > 0) {
-                // Add remaining money as grey segment if there's remaining money
+            // Add remaining budget as grey segment if there's remaining budget
+            if (remainingMoney > 0) {
                 const remainingPercentage = (remainingMoney / monthlyIncome) * 100;
-                labels.push('Remaining');
+                labels.push('Remaining Budget');
                 data.push(remainingPercentage);
                 categoryOrder.push('remaining'); // Special marker for remaining
-            } else {
-                // Exactly at 100% - expenses match income perfectly
-                // No remaining segment needed
             }
             
             // Destroy existing chart if it exists
@@ -2778,18 +2689,14 @@
             // Prepare background colors using consistent color mapping
             const backgroundColors = [];
             labels.forEach((label, index) => {
-                if (label === 'Remaining') {
-                    backgroundColors.push('#E0E0E0'); // Grey for remaining money
+                if (label === 'Remaining Budget') {
+                    backgroundColors.push('#E0E0E0'); // Grey for remaining budget
                 } else {
                     // Use the stored category to get consistent color
                     const category = categoryOrder[index];
                     backgroundColors.push(getCategoryColor(category));
                 }
             });
-            
-            // If over budget, ensure chart shows 100% (all segments normalized)
-            // Store over-budget info for legend display
-            const overBudgetAmount = isOverBudget ? (totalExpenses - monthlyIncome) : 0;
             
             // Create chart (pie or bar based on currentChartType)
             const ctx = document.getElementById('categoryPieChart').getContext('2d');
@@ -2853,14 +2760,7 @@
             let legendHtml = '<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">';
             labels.forEach((label, index) => {
                 const percentage = data[index];
-                let segmentAmount;
-                if (isOverBudget && label !== 'Remaining') {
-                    // For over-budget: show actual amount, not normalized
-                    const category = categoryOrder[index];
-                    segmentAmount = categorySpending[category] || 0;
-                } else {
-                    segmentAmount = (percentage / 100) * monthlyIncome;
-                }
+                const segmentAmount = (percentage / 100) * monthlyIncome;
                 const color = backgroundColors[index];
                 legendHtml += `
                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -2869,17 +2769,6 @@
                     </div>
                 `;
             });
-            
-            // Add over-budget warning if expenses exceeded income
-            if (isOverBudget) {
-                legendHtml += `
-                    <div style="display: flex; align-items: center; gap: 8px; color: #dc3545; font-weight: bold;">
-                        <div style="width: 20px; height: 20px; background: #dc3545; border-radius: 4px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
-                        <span>⚠️ Over Budget: ${formatNumber(overBudgetAmount)} ฿</span>
-                    </div>
-                `;
-            }
-            
             legendHtml += '</div>';
             document.getElementById('pieChartLegend').innerHTML = legendHtml;
         }
@@ -3765,25 +3654,6 @@ Type <strong>"guide"</strong> to see all available commands and how to use them.
             
             // If expense, make it negative
             const finalAmount = type === 'expense' ? -Math.abs(amount) : Math.abs(amount);
-            
-            // Check budget if adding expense
-            if (type === 'expense') {
-                const budgetCheck = await checkBudgetExceeded(amount);
-                if (budgetCheck.exceeded) {
-                    addChatMessage(`❌ Expense would exceed monthly income! Remaining budget: ${budgetCheck.remaining.toFixed(2)} ฿`, 'bot');
-                    // Remove confirmation message
-                    const chatMessages = document.getElementById('chatMessages');
-                    const messages = chatMessages.querySelectorAll('.chat-message');
-                    for (let i = messages.length - 1; i >= 0; i--) {
-                        if (messages[i].classList.contains('confirmation-message')) {
-                            messages[i].remove();
-                            break;
-                        }
-                    }
-                    parsedData = null;
-                    return;
-                }
-            }
             
             try {
                 const response = await fetch('/add_expense', {
