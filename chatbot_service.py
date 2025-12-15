@@ -4,6 +4,10 @@ from datetime import datetime, timedelta
 
 # Rule-based chatbot service for natural language processing
 
+def get_local_time():
+    """Get current local time (UTC+7 for Thailand timezone)"""
+    return datetime.now() + timedelta(hours=7)
+
 def get_conversational_response(text, uid=None):
     """
     Handle conversational inputs like greetings, questions, and general chat.
@@ -286,7 +290,7 @@ def handle_total_spending_query(text, uid=None):
             expenses = get_expenses(uid)
             
             # Determine time period
-            now = datetime.now()
+            now = get_local_time()
             time_period = None
             period_text = ""
             
@@ -718,7 +722,7 @@ def handle_category_spending_query(text, uid=None):
             expenses = get_expenses(uid)
             
             # Determine time period
-            now = datetime.now()
+            now = get_local_time()
             time_period = None
             period_text = ""
             
@@ -888,12 +892,13 @@ def parse_natural_language(text, uid=None):
         }
     
     # Initialize result
+    now = get_local_time()
     result = {
         "type": "expense",
         "amount": 0,
         "category": "other",
-        "date": datetime.now().strftime("%Y-%m-%d"),
-        "time": datetime.now().strftime("%H:%M:%S"),  # Include current time
+        "date": now.strftime("%Y-%m-%d"),
+        "time": now.strftime("%H:%M:%S"),  # Include current time
         "note": text[:50]  # Limit note to 50 chars
     }
     
@@ -1005,7 +1010,7 @@ def parse_natural_language(text, uid=None):
         result["amount"] = 0
     
     # Extract date and time
-    today = datetime.now()
+    today = get_local_time()
     date_found = False
     time_found = False
     
@@ -1146,10 +1151,11 @@ def parse_natural_language(text, uid=None):
         result["amount"] = 0
     if not result.get("category"):
         result["category"] = "other"
+    now = get_local_time()
     if not result.get("date"):
-        result["date"] = datetime.now().strftime("%Y-%m-%d")
+        result["date"] = now.strftime("%Y-%m-%d")
     if not result.get("time"):
-        result["time"] = datetime.now().strftime("%H:%M:%S")
+        result["time"] = now.strftime("%H:%M:%S")
     
     return result
 

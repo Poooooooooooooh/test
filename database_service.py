@@ -2,7 +2,11 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'cpe101finalproject'))
 from firebase_config import db
-from datetime import datetime
+from datetime import datetime, timedelta
+
+def get_local_time():
+    """Get current local time (UTC+7 for Thailand timezone)"""
+    return datetime.now() + timedelta(hours=7)
 
 def add_expense(uid, category, amount, date, description="", time=None):
     # If time is provided, combine date and time into datetime string
@@ -14,7 +18,7 @@ def add_expense(uid, category, amount, date, description="", time=None):
         datetime_str = f"{date} {time}"
     else:
         # If no time provided, use current time
-        now = datetime.now()
+        now = get_local_time()
         datetime_str = now.strftime("%Y-%m-%d %H:%M:%S")
     
     expense = {

@@ -4,6 +4,10 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+def get_local_time():
+    """Get current local time (UTC+7 for Thailand timezone)"""
+    return datetime.now() + timedelta(hours=7)
+
 def analyze_expenses(expenses, uid=None):
     """
     Analyze expenses and provide insights.
@@ -42,7 +46,7 @@ def analyze_expenses(expenses, uid=None):
     category_counts = defaultdict(int)
     
     # Get current month
-    now = datetime.now()
+    now = get_local_time()
     current_month_start = datetime(now.year, now.month, 1)
     current_month_expenses = []
     
@@ -291,11 +295,11 @@ def get_average_spending(expenses, category=None, time_period=None):
             expenses_df = expenses_df[expenses_df['category'] == category]
         
         if time_period == "this_month":
-            now = datetime.now()
+            now = get_local_time()
             expenses_df = expenses_df[expenses_df['date'].dt.month == now.month]
             expenses_df = expenses_df[expenses_df['date'].dt.year == now.year]
         elif time_period == "last_month":
-            now = datetime.now()
+            now = get_local_time()
             last_month = now.month - 1 if now.month > 1 else 12
             last_year = now.year if now.month > 1 else now.year - 1
             expenses_df = expenses_df[expenses_df['date'].dt.month == last_month]
