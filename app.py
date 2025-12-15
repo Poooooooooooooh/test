@@ -398,6 +398,46 @@ def add_expense_route():
         return jsonify({"error": "Invalid token"}), 401
 
     data = request.json
+    amount = float(data["amount"])
+    
+    # If adding an expense (negative amount), check if it would exceed income
+    if amount < 0:
+        from database_service import get_expenses
+        from datetime import datetime
+        from analysis_service import get_local_time
+        expenses = get_expenses(uid)
+        
+        # Calculate current month income and expenses
+        now = get_local_time()
+        current_month_start = datetime(now.year, now.month, 1)
+        
+        monthly_income = 0
+        monthly_expenses = 0
+        
+        for expense in expenses:
+            expense_date_str = expense.get("datetime") or expense.get("date", "")
+            try:
+                if " " in expense_date_str:
+                    expense_date = datetime.strptime(expense_date_str.split()[0], "%Y-%m-%d")
+                else:
+                    expense_date = datetime.strptime(expense_date_str, "%Y-%m-%d")
+                
+                if expense_date >= current_month_start:
+                    exp_amount = float(expense.get("amount", 0))
+                    if exp_amount >= 0:
+                        monthly_income += exp_amount
+                    else:
+                        monthly_expenses += abs(exp_amount)
+            except:
+                pass
+        
+        # Check if adding this expense would exceed income
+        new_expense_amount = abs(amount)
+        if monthly_income > 0 and (monthly_expenses + new_expense_amount) > monthly_income:
+            return jsonify({
+                "error": f"Expense would exceed monthly income. Remaining budget: {monthly_income - monthly_expenses:.2f} ฿"
+            }), 400
+    
     add_expense(
         uid,
         data["category"],
